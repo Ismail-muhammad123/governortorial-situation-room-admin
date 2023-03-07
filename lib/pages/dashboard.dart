@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../data/radialChartData.dart';
@@ -21,6 +22,8 @@ class _DashboardState extends State<Dashboard> {
   final reportsRef =
       FirebaseFirestore.instance.collection("reports").snapshots();
 
+  String _lga = "";
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -36,6 +39,46 @@ class _DashboardState extends State<Dashboard> {
                     fontWeight: FontWeight.w600,
                     fontSize: 18,
                   ),
+                ),
+                Text("Filter By LGA:"),
+                SizedBox(
+                  width: 50.0,
+                ),
+                FutureBuilder(
+                  future: FirebaseFirestore.instance
+                      .collection("local_governments")
+                      .get(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return Container();
+                    }
+                    return Flexible(
+                      child: DropdownButtonFormField(
+                        // hint: Text("Select Local Government"),
+                        value: _lga,
+                        items: [
+                          DropdownMenuItem(
+                            child: Text("All"),
+                            value: "",
+                          ),
+                          ...snapshot.data!.docs.map(
+                            (e) => DropdownMenuItem(
+                              child: Text(e.data()['name']),
+                              value: e.id,
+                            ),
+                          ),
+                        ],
+                        onChanged: (val) => setState(
+                          () {
+                            _lga = val as String;
+                          },
+                        ),
+                      ),
+                    );
+                  },
                 ),
                 const Spacer(),
                 Padding(
@@ -54,12 +97,186 @@ class _DashboardState extends State<Dashboard> {
                 Text(FirebaseAuth.instance.currentUser?.email ?? ""),
               ],
             ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: StreamBuilder(
+                stream: FirebaseFirestore.instance
+                    .collection("reports")
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  var data = snapshot.data!.docs;
+                  if (_lga.isNotEmpty) {
+                    data = data
+                        .where((element) =>
+                            element.data()['local_government'] == _lga)
+                        .toList();
+                  }
+                  var acredated = data.fold(
+                      0,
+                      (previousValue, element) =>
+                          previousValue +
+                          (element.data()['accredited_votes'] as int));
+                  var rejected = data.fold(
+                      0,
+                      (previousValue, element) =>
+                          previousValue +
+                          (element.data()['rejected_votes'] as int));
+                  var casted = data.fold(
+                      0,
+                      (previousValue, element) =>
+                          previousValue +
+                          (element.data()['accredited_votes'] as int));
+
+                  return Row(
+                    children: [
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            height: 150,
+                            width: double.maxFinite,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.3),
+                                  blurRadius: 12.0,
+                                  offset: Offset(4, 4),
+                                )
+                              ],
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  NumberFormat('###,###,###,###')
+                                      .format(acredated),
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                  ),
+                                ),
+                                Text("Total Accredated Votes"),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            width: double.maxFinite,
+                            height: 150,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.3),
+                                  blurRadius: 12.0,
+                                  offset: Offset(4, 4),
+                                )
+                              ],
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  NumberFormat('###,###,###,###')
+                                      .format(casted),
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                  ),
+                                ),
+                                Text("Total Casted Votes"),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            width: double.maxFinite,
+                            height: 150,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.3),
+                                  blurRadius: 12.0,
+                                  offset: Offset(4, 4),
+                                )
+                              ],
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  NumberFormat('###,###,###,###')
+                                      .format(rejected),
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                  ),
+                                ),
+                                Text("Total Rejected Votes"),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Flexible(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            height: 150,
+                            width: double.maxFinite,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.3),
+                                  blurRadius: 12.0,
+                                  offset: Offset(4, 4),
+                                )
+                              ],
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  NumberFormat('###,###,###,###')
+                                      .format(casted - rejected),
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                  ),
+                                ),
+                                Text("Total Valid Votes"),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
             Row(
               children: [
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
-                    height: 250,
+                    height: 300,
                     width: 800,
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -79,32 +296,36 @@ class _DashboardState extends State<Dashboard> {
                           if (!snapshot.hasData) {
                             return Container();
                           }
-                          var pdp = snapshot.data!.docs.fold<double>(
+                          var data = snapshot.data!.docs;
+                          if (_lga.isNotEmpty) {
+                            data = data
+                                .where((element) =>
+                                    element.data()['local_government'] == _lga)
+                                .toList();
+                          }
+                          var pdp = data.fold<double>(
                               0,
                               (previousValue, element) =>
                                   previousValue + element.data()["pdp"]);
-                          var apc = snapshot.data!.docs.fold<double>(
+                          var apc = data.fold<double>(
                               0,
                               (previousValue, element) =>
                                   previousValue + element.data()["apc"]);
-                          var nnpp = snapshot.data!.docs.fold<double>(
+                          var nnpp = data.fold<double>(
                               0,
                               (previousValue, element) =>
                                   previousValue + element.data()["nnpp"]);
-                          var total = 334478;
+                          var others = data.fold<double>(
+                              0,
+                              (previousValue, element) =>
+                                  previousValue +
+                                  element.data()["other_parties"]);
+                          var total = 5594193;
                           return Column(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               ProgressBarWidget(
-                                label: "ENGR. YUSUF ABDULLAHI AHMAD",
-                                maxValue: total.toDouble(),
-                                value: pdp,
-                                backgroundColor:
-                                    const Color.fromARGB(255, 218, 218, 218),
-                                progressColor: Colors.red,
-                              ),
-                              ProgressBarWidget(
-                                label: "MUNTARI ISHAQ",
+                                label: "GAWUNA/GARO",
                                 maxValue: total.toDouble(),
                                 value: apc,
                                 backgroundColor:
@@ -112,9 +333,25 @@ class _DashboardState extends State<Dashboard> {
                                 progressColor: Colors.green,
                               ),
                               ProgressBarWidget(
-                                label: "ENGR. SAGIR KOKI",
+                                label: "ABBA/ABDUSSALAM",
                                 maxValue: total.toDouble(),
                                 value: nnpp,
+                                backgroundColor:
+                                    const Color.fromARGB(255, 218, 218, 218),
+                                progressColor: Colors.blue,
+                              ),
+                              ProgressBarWidget(
+                                label: "SADIQ/DANBATTA",
+                                maxValue: total.toDouble(),
+                                value: pdp,
+                                backgroundColor:
+                                    const Color.fromARGB(255, 218, 218, 218),
+                                progressColor: Colors.red,
+                              ),
+                              ProgressBarWidget(
+                                label: "OTHER PARTIES",
+                                maxValue: total.toDouble(),
+                                value: others,
                                 backgroundColor:
                                     const Color.fromARGB(255, 218, 218, 218),
                                 progressColor: Colors.blue,
@@ -133,7 +370,7 @@ class _DashboardState extends State<Dashboard> {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
-                      height: 250,
+                      height: 300,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
                         color: Colors.white,
@@ -152,18 +389,30 @@ class _DashboardState extends State<Dashboard> {
                               child: Text("An error has occured"),
                             );
                           }
-                          var pdp = snapshot.data!.docs.fold<double>(
+                          var data = snapshot.data!.docs;
+                          if (_lga.isNotEmpty) {
+                            data = data
+                                .where((element) =>
+                                    element.data()['local_government'] == _lga)
+                                .toList();
+                          }
+                          var pdp = data.fold<double>(
                               0,
                               (previousValue, element) =>
                                   previousValue + element.data()["pdp"]);
-                          var apc = snapshot.data!.docs.fold<double>(
+                          var apc = data.fold<double>(
                               0,
                               (previousValue, element) =>
                                   previousValue + element.data()["apc"]);
-                          var nnpp = snapshot.data!.docs.fold<double>(
+                          var nnpp = data.fold<double>(
                               0,
                               (previousValue, element) =>
                                   previousValue + element.data()["nnpp"]);
+                          var others = data.fold<double>(
+                              0,
+                              (previousValue, element) =>
+                                  previousValue +
+                                  element.data()["other_parties"]);
                           var total = 334478;
                           return SfCircularChart(
                             title: ChartTitle(
@@ -174,16 +423,20 @@ class _DashboardState extends State<Dashboard> {
                                 trackBorderColor: Colors.white,
                                 dataSource: [
                                   PieData(
-                                    "PDP",
-                                    pdp,
-                                  ),
-                                  PieData(
                                     "APC",
                                     apc,
                                   ),
                                   PieData(
                                     "NNPP",
                                     nnpp,
+                                  ),
+                                  PieData(
+                                    "PDP",
+                                    pdp,
+                                  ),
+                                  PieData(
+                                    "OTHERS",
+                                    others,
                                   ),
                                 ],
                                 maximumValue: total.toDouble(),
@@ -233,10 +486,19 @@ class _DashboardState extends State<Dashboard> {
                     if (!snapshot.hasData) {
                       return const Text("An error has occured");
                     }
+                    var data = snapshot.data!.docs;
+                    if (_lga.isNotEmpty) {
+                      data = data
+                          .where((element) =>
+                              element.data()['local_government'] == _lga)
+                          .toList();
+                    }
                     return SingleChildScrollView(
-                      child: ResultsDataTable(
-                        dataList:
-                            snapshot.data!.docs.map((e) => e.data()).toList(),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: ResultsDataTable(
+                          dataList: data.map((e) => e.data()).toList(),
+                        ),
                       ),
                     );
                   },

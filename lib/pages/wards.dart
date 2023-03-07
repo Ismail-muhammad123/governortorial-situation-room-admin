@@ -14,8 +14,12 @@ class _WardsPageState extends State<WardsPage> {
     fontWeight: FontWeight.w600,
   );
 
+  String filter_lge = "";
+
   final _wardStream =
-      FirebaseFirestore.instance.collection('Wards').snapshots();
+      FirebaseFirestore.instance.collection('wards').snapshots();
+  final _lgaStream =
+      FirebaseFirestore.instance.collection("local_governments").snapshots();
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -27,48 +31,6 @@ class _WardsPageState extends State<WardsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextFormField(
-                      controller: _controller,
-                      decoration: const InputDecoration(
-                        label: Text("Ward Name"),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    MaterialButton(
-                      onPressed: () {
-                        _controller.text.isNotEmpty
-                            ? FirebaseFirestore.instance
-                                .collection('Wards')
-                                .add({
-                                "name": _controller.text,
-                                "added_at": DateTime.now().toUtc().toString()
-                              }).then(
-                                (value) => Navigator.of(context).pop(),
-                              )
-                            : setState(() {});
-                      },
-                      color: Colors.green,
-                      child: const Text("Save"),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -87,6 +49,38 @@ class _WardsPageState extends State<WardsPage> {
                 ],
               ),
             ),
+            Row(
+              children: [
+                Text("Filter:"),
+                SizedBox(
+                  width: 200,
+                ),
+                StreamBuilder(
+                    stream: _lgaStream,
+                    builder: (context, snapshot) {
+                      return Flexible(
+                        child: DropdownButtonFormField(
+                          hint: Text("Select Local Government"),
+                          items: [
+                            DropdownMenuItem(
+                              child: Text("All"),
+                              value: "",
+                            ),
+                            ...snapshot.data!.docs.map(
+                              (e) => DropdownMenuItem(
+                                child: Text(e.data()['name']),
+                                value: e.id,
+                              ),
+                            ),
+                          ],
+                          onChanged: (val) => setState(() {
+                            filter_lge = val as String;
+                          }),
+                        ),
+                      );
+                    }),
+              ],
+            ),
             Flexible(
               child: Container(
                 width: double.maxFinite,
@@ -103,10 +97,17 @@ class _WardsPageState extends State<WardsPage> {
                           child: CircularProgressIndicator(),
                         );
                       }
-                      if (!snapshot.hasData) {
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                         return const Center(
                           child: Text("Error"),
                         );
+                      }
+                      var data = snapshot.data!.docs;
+                      if (filter_lge.isNotEmpty) {
+                        data = data
+                            .where((element) =>
+                                element.data()['officer_email'] == filter_lge)
+                            .toList();
                       }
                       return DataTable(
                         columns: [
@@ -118,71 +119,37 @@ class _WardsPageState extends State<WardsPage> {
                           ),
                           DataColumn(
                             label: Text(
-                              "Action",
+                              "Local Government",
                               style: _tableHeadingStyle,
                             ),
                           ),
                         ],
-                        rows: snapshot.data!.docs.map(
+                        rows: data.map(
                           (e) {
                             return DataRow(
                               cells: [
                                 DataCell(
-                                  Text(e.data()['name']),
+                                  Text(e.data()['ward_name']),
                                 ),
                                 DataCell(
-                                  IconButton(
-                                    onPressed: () {
-                                      _controller.text = e.data()['name'];
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            content: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                TextFormField(
-                                                  controller: _controller,
-                                                  decoration:
-                                                      const InputDecoration(
-                                                    label: Text("Ward Name"),
-                                                  ),
-                                                ),
-                                                const SizedBox(
-                                                  height: 20,
-                                                ),
-                                                MaterialButton(
-                                                  onPressed: () {
-                                                    _controller.text.isNotEmpty
-                                                        ? FirebaseFirestore
-                                                            .instance
-                                                            .collection('Wards')
-                                                            .doc(e.id)
-                                                            .set({
-                                                            "name": _controller
-                                                                .text,
-                                                            "added_at":
-                                                                DateTime.now()
-                                                                    .toUtc()
-                                                                    .toString()
-                                                          }).then(
-                                                            (value) =>
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop(),
-                                                          )
-                                                        : setState(() {});
-                                                  },
-                                                  color: Colors.green,
-                                                  child: const Text("Save"),
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
+                                  FutureBuilder(
+                                    future: FirebaseFirestore.instance
+                                        .collection("local_governments")
+                                        .doc(e.data()['local_government_id'])
+                                        .get(),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return Center(
+                                            child: CircularProgressIndicator());
+                                      }
+                                      if (!snapshot.hasData ||
+                                          !snapshot.data!.exists) {
+                                        return Text("Not Found");
+                                      }
+                                      return Text(
+                                          snapshot.data!.data()!['name']);
                                     },
-                                    icon: const Icon(Icons.edit),
                                   ),
                                 ),
                               ],

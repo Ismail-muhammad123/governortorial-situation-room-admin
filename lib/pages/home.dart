@@ -1,9 +1,7 @@
 import 'package:admin/pages/agents.dart';
 import 'package:admin/pages/dashboard.dart';
 import 'package:admin/pages/results.dart';
-import 'package:admin/pages/settings.dart';
-import 'package:admin/pages/splashScreen.dart';
-import 'package:admin/pages/units.dart';
+import 'package:admin/pages/local_governments.dart';
 import 'package:admin/pages/wards.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -24,8 +22,7 @@ class HomePageState extends State<HomePage> {
     ResultsPage(),
     AgentsPage(),
     WardsPage(),
-    PolingUnitsPage(),
-    // SettingsPage(),
+    LocalGovernments(),
   ];
 
   int _currentTabIndex = 0;
@@ -123,8 +120,18 @@ class HomePageState extends State<HomePage> {
                     }),
                     child: SideMenuItem(
                       selected: _currentTabIndex == 3,
-                      label: "Agents",
+                      label: "R.O s",
                       menuIconData: Icons.person,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => setState(() {
+                      _currentTabIndex = 5;
+                    }),
+                    child: SideMenuItem(
+                      label: "LGAs",
+                      selected: _currentTabIndex == 5,
+                      menuIconData: Icons.location_pin,
                     ),
                   ),
                   GestureDetector(
@@ -135,16 +142,6 @@ class HomePageState extends State<HomePage> {
                       label: "Wards",
                       selected: _currentTabIndex == 4,
                       menuIconData: Icons.location_city,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => setState(() {
-                      _currentTabIndex = 5;
-                    }),
-                    child: SideMenuItem(
-                      label: "Polling Units",
-                      selected: _currentTabIndex == 5,
-                      menuIconData: Icons.location_pin,
                     ),
                   ),
                   // GestureDetector(
@@ -238,21 +235,21 @@ class HomeMainTab extends StatelessWidget {
               Flexible(
                 child: HomePageCard(
                   party: "apc",
-                  ref: "Muntari ishaq",
+                  ref: "GAWUNA/GARO",
                   cardColor: const Color.fromARGB(255, 5, 92, 163),
                 ),
               ),
               Flexible(
                 child: HomePageCard(
                   party: "nnpp",
-                  ref: "Engr. Sagir Koki",
+                  ref: "ABBA/ABDUSSALAM",
                   cardColor: Colors.red,
                 ),
               ),
               Flexible(
                 child: HomePageCard(
                   party: "pdp",
-                  ref: "Engr. Yusuf Abdullahi Da’awah",
+                  ref: "SADIQ/DANBATTA",
                   cardColor: Colors.green,
                 ),
               ),

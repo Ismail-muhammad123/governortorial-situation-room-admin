@@ -7,7 +7,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../widgets/agentListWidget.dart';
 import '../widgets/newAgentForm.dart';
 
-
 class AgentsPage extends StatefulWidget {
   const AgentsPage({super.key});
 
@@ -17,21 +16,12 @@ class AgentsPage extends StatefulWidget {
 
 class _AgentsPageState extends State<AgentsPage> {
   final _agentsStream = FirebaseFirestore.instance
-      .collection('Profile')
+      .collection('profiles')
       .where('isAgent', isEqualTo: true)
       .snapshots();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () async {
-          await showDialog(
-            context: context,
-            builder: (context) => NewAgentForm(),
-          );
-        },
-      ),
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -39,7 +29,7 @@ class _AgentsPageState extends State<AgentsPage> {
             Row(
               children: [
                 Text(
-                  "List Of Agents".toUpperCase(),
+                  "List Of Returning Officers".toUpperCase(),
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 18,
@@ -76,6 +66,12 @@ class _AgentsPageState extends State<AgentsPage> {
                       child: Text("An error has occured"),
                     );
                   }
+                  if (snapshot.data!.docs.isEmpty) {
+                    return Center(
+                      child: Text("Empty"),
+                    );
+                  }
+                  print(snapshot.data!.docs.first.data());
                   return ListView(
                     children: snapshot.data!.docs
                         .map(
@@ -84,18 +80,9 @@ class _AgentsPageState extends State<AgentsPage> {
                             fullName: e.data()['full_name'],
                             email: e.data()['email'],
                             phone: e.data()['phone_number'],
-                            assignedWard: e.data()['assigned_ward'],
-                            assignedPollingUnit:
-                                e.data()['assigned_polling_unit'],
                           ),
                         )
                         .toList(),
-                    // children: List.generate(
-                    //   5,
-                    //   (index) => AgentListWidget(
-                    //     fullName: .,
-                    //   ),
-                    // ),
                   );
                 },
               ),

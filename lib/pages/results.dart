@@ -16,23 +16,12 @@ class ResultsPage extends StatefulWidget {
 }
 
 class _ResultsPageState extends State<ResultsPage> {
-  final TextStyle _tableHeadingStyle = const TextStyle(
-    fontWeight: FontWeight.w800,
-    fontSize: 18,
-  );
-
-  final TextStyle _tableContentStyle = const TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-  );
   final reportsRef = FirebaseFirestore.instance
       .collection("reports")
       .orderBy("uploaded_at", descending: true)
       .snapshots();
 
-  String filter_agent_email = "";
-  String filter_ward_id = "";
-  String filter_unit_id = "";
+  String filter_lga = "";
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -51,37 +40,29 @@ class _ResultsPageState extends State<ResultsPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Icon(Icons.sort),
-                // Text(
-                //   "Filter: ".toUpperCase(),
-                //   style: const TextStyle(
-                //     fontWeight: FontWeight.w600,
-                //   ),
-                // ),
                 const SizedBox(
                   width: 20,
                 ),
                 Text(
-                  "Wards: ".toUpperCase(),
+                  "Local Government: ".toUpperCase(),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(
+                  width: 20,
+                ),
                 Flexible(
                   child: StreamBuilder(
                     stream: FirebaseFirestore.instance
-                        .collection('Wards')
+                        .collection('local_governments')
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return const Text("...");
                       }
-                      //   return Text(
-                      //       snapshot.data!.data()!['name']);
-                      // },
                       return DropdownButtonFormField(
-                        // hint: const Text("Select Ward"),
-                        value: filter_ward_id,
+                        value: filter_lga,
                         items: [
                           const DropdownMenuItem(
                             value: "",
@@ -90,95 +71,8 @@ class _ResultsPageState extends State<ResultsPage> {
                           ...snapshot.data!.docs.map(
                             (e) => DropdownMenuItem(
                               value: e.id,
-                              child: Text(e.data()['name']),
-                            ),
-                          )
-                        ],
-                        onChanged: (val) => setState(
-                          () {
-                            filter_ward_id = val as String;
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(
-                  width: 20,
-                ),
-                Text(
-                  "Units: ".toUpperCase(),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Flexible(
-                  child: StreamBuilder(
-                    stream: FirebaseFirestore.instance
-                        .collection('polling_units')
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const Text("...");
-                      }
-                      //   return Text(
-                      //       snapshot.data!.data()!['name']);
-                      // },
-                      return DropdownButtonFormField(
-                        // hint: const Text("Select Polling Unit"),
-                        value: filter_ward_id,
-                        items: [
-                          const DropdownMenuItem(
-                            child: Text("All"),
-                            value: "",
-                          ),
-                          ...snapshot.data!.docs.map(
-                            (e) => DropdownMenuItem(
-                              value: e.id,
-                              child: Text(e.data()['name']),
-                            ),
-                          )
-                        ],
-                        onChanged: (val) => setState(
-                          () {
-                            filter_unit_id = val as String;
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(
-                  width: 20,
-                ),
-                Text(
-                  "Agents: ".toUpperCase(),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Flexible(
-                  child: StreamBuilder(
-                    stream: FirebaseFirestore.instance
-                        .collection('Profile')
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const Text("...");
-                      }
-                      return DropdownButtonFormField(
-                        // hint: const Text("Select Agent"),
-                        value: filter_agent_email,
-                        items: [
-                          const DropdownMenuItem(
-                            value: "",
-                            child: Text("All"),
-                          ),
-                          ...snapshot.data!.docs.map(
-                            (e) => DropdownMenuItem(
-                              value: e.data()['email'],
                               child: Text(
-                                e.data()['email'],
+                                e.data()['name'],
                                 style: TextStyle(
                                   fontSize: 16,
                                 ),
@@ -188,7 +82,7 @@ class _ResultsPageState extends State<ResultsPage> {
                         ],
                         onChanged: (val) => setState(
                           () {
-                            filter_agent_email = val as String;
+                            filter_lga = val as String;
                           },
                         ),
                       );
@@ -198,9 +92,7 @@ class _ResultsPageState extends State<ResultsPage> {
                 MaterialButton(
                   onPressed: () => setState(
                     () {
-                      filter_agent_email = "";
-                      filter_ward_id = "";
-                      filter_unit_id = "";
+                      filter_lga = "";
                     },
                   ),
                   child: Padding(
@@ -237,28 +129,24 @@ class _ResultsPageState extends State<ResultsPage> {
                   }
 
                   var data = snapshot.data!.docs;
-                  if (filter_agent_email.isNotEmpty) {
+                  if (filter_lga.isNotEmpty) {
                     data = data
                         .where((element) =>
-                            element.data()['agentEmail'] == filter_agent_email)
+                            element.data()['local_government'] == filter_lga)
                         .toList();
                   }
-                  if (filter_ward_id.isNotEmpty) {
-                    data = data
-                        .where((element) =>
-                            element.data()['ward'] == filter_ward_id)
-                        .toList();
-                  }
-                  if (filter_unit_id.isNotEmpty) {
-                    data = data
-                        .where((element) =>
-                            element.data()['polling_unit'] == filter_ward_id)
-                        .toList();
-                  }
-
+                  var d = data.map((e) { 
+                    var r = e.data();
+                    r['id'] = e.id;
+                    return r;
+                    
+                    }).toList();
                   return SingleChildScrollView(
-                    child: ResultsDataTable(
-                      dataList: data.map((e) => e.data()).toList(),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: ResultsDataTable(
+                        dataList: d,
+                      ),
                     ),
                   );
                 },

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 class HomePageCard extends StatelessWidget {
   final Color cardColor;
   final int yeah;
@@ -10,7 +9,7 @@ class HomePageCard extends StatelessWidget {
   const HomePageCard({
     Key? key,
     this.yeah = 2023,
-    this.office = "House of representatives",
+    this.office = "Govertorial Candidate",
     required this.ref,
     required this.party,
     required this.cardColor,

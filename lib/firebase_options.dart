@@ -53,12 +53,12 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCQnXaOsspN8g3-jabDHqNwJROJb5Lz_C0',
-    appId: '1:630416656653:web:c25d580c32ac341d820844',
-    messagingSenderId: '630416656653',
-    projectId: 'polling-monitor',
-    authDomain: 'polling-monitor.firebaseapp.com',
-    storageBucket: 'polling-monitor.appspot.com',
-    measurementId: 'G-FEY9L6MN3W',
+    apiKey: 'AIzaSyBQsZWiIToZTkBOiC7tifYHthFzYtv13h8',
+    appId: '1:1084210907806:web:08293c6736dc1b8502098f',
+    messagingSenderId: '1084210907806',
+    projectId: 'situation-room-87120',
+    authDomain: 'situation-room-87120.firebaseapp.com',
+    storageBucket: 'situation-room-87120.appspot.com',
+    measurementId: 'G-DS7HVW3YDK',
   );
 }
