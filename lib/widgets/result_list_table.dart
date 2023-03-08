@@ -18,7 +18,7 @@ class ResultsDataTable extends StatelessWidget {
         DataColumn(label: Text("Official")),
         DataColumn(label: Text("L.G.A")),
         DataColumn(label: Text("Ward")),
-        DataColumn(label: Text("Accredated")),
+        DataColumn(label: Text("Accredited")),
         DataColumn(label: Text("Rejected")),
         DataColumn(label: Text("Valid")),
         DataColumn(

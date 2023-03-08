@@ -158,10 +158,11 @@ class _DashboardState extends State<Dashboard> {
                                   NumberFormat('###,###,###,###')
                                       .format(acredated),
                                   style: TextStyle(
+                                    fontWeight: FontWeight.bold,
                                     fontSize: 24,
                                   ),
                                 ),
-                                Text("Total Accredated Votes"),
+                                Text("Total Accredited Votes"),
                               ],
                             ),
                           ),
@@ -192,6 +193,8 @@ class _DashboardState extends State<Dashboard> {
                                       .format(casted),
                                   style: TextStyle(
                                     fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.blue,
                                   ),
                                 ),
                                 Text("Total Casted Votes"),
@@ -225,6 +228,8 @@ class _DashboardState extends State<Dashboard> {
                                       .format(rejected),
                                   style: TextStyle(
                                     fontSize: 24,
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Text("Total Rejected Votes"),
@@ -258,6 +263,8 @@ class _DashboardState extends State<Dashboard> {
                                       .format(casted - rejected),
                                   style: TextStyle(
                                     fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
                                   ),
                                 ),
                                 Text("Total Valid Votes"),

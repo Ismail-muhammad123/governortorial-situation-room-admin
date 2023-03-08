@@ -9,7 +9,7 @@ class HomePageCard extends StatelessWidget {
   const HomePageCard({
     Key? key,
     this.yeah = 2023,
-    this.office = "Govertorial Candidate",
+    this.office = "Gubernatorial Candidate",
     required this.ref,
     required this.party,
     required this.cardColor,
