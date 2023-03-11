@@ -135,19 +135,28 @@ class _ResultsPageState extends State<ResultsPage> {
                             element.data()['local_government'] == filter_lga)
                         .toList();
                   }
-                  var d = data.map((e) { 
+                  var d = data.map((e) {
                     var r = e.data();
                     r['id'] = e.id;
                     return r;
-                    
-                    }).toList();
-                  return SingleChildScrollView(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: ResultsDataTable(
-                        dataList: d,
+                  }).toList();
+                  return Column(
+                    children: [
+                      Flexible(
+                        child: SizedBox(
+                          height: double.maxFinite,
+                          child: SingleChildScrollView(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: ResultsDataTable(
+                                dataList: d,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      ResultTableTotal(dataList: d),
+                    ],
                   );
                 },
               ),

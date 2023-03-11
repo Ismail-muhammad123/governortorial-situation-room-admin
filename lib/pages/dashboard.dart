@@ -481,35 +481,44 @@ class _DashboardState extends State<Dashboard> {
             ),
             Padding(
               padding: const EdgeInsets.all(10),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.78),
-                child: StreamBuilder(
-                  stream: reportsRef,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const CircularProgressIndicator();
-                    }
-                    if (!snapshot.hasData) {
-                      return const Text("An error has occured");
-                    }
-                    var data = snapshot.data!.docs;
-                    if (_lga.isNotEmpty) {
-                      data = data
-                          .where((element) =>
-                              element.data()['local_government'] == _lga)
-                          .toList();
-                    }
-                    return SingleChildScrollView(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: ResultsDataTable(
+              child: StreamBuilder(
+                stream: reportsRef,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
+                  if (!snapshot.hasData) {
+                    return const Text("Data not Found");
+                  }
+                  var data = snapshot.data!.docs;
+                  if (_lga.isNotEmpty) {
+                    data = data
+                        .where((element) =>
+                            element.data()['local_government'] == _lga)
+                        .toList();
+                  }
+                  return SizedBox(
+                    height: 400.0,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: SingleChildScrollView(
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: ResultsDataTable(
+                                dataList: data.map((e) => e.data()).toList(),
+                              ),
+                            ),
+                          ),
+                        ),
+                        ResultTableTotal(
                           dataList: data.map((e) => e.data()).toList(),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ],

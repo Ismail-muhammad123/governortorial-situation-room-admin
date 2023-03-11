@@ -21,22 +21,10 @@ class ResultsDataTable extends StatelessWidget {
         DataColumn(label: Text("Accredited")),
         DataColumn(label: Text("Rejected")),
         DataColumn(label: Text("Valid")),
-        DataColumn(
-            label: Text(
-          "APC",
-        )),
-        DataColumn(
-            label: Text(
-          "NNPP",
-        )),
-        DataColumn(
-            label: Text(
-          "PDP",
-        )),
-        DataColumn(
-            label: Text(
-          "OHERS",
-        )),
+        DataColumn(label: Text("APC")),
+        DataColumn(label: Text("NNPP")),
+        DataColumn(label: Text("PDP")),
+        DataColumn(label: Text("OHERS")),
         DataColumn(label: Text("Time")),
         DataColumn(label: Text("No Violence")),
         DataColumn(label: Text("Images")),
@@ -191,7 +179,6 @@ class ResultsDataTable extends StatelessWidget {
                       }
 
                       var images = snapshot.data!.docs;
-                      print(images.length);
                       return GestureDetector(
                         onTap: images.isEmpty
                             ? null
@@ -202,7 +189,6 @@ class ResultsDataTable extends StatelessWidget {
                                         .ref()
                                         .child(i.data()['image_object'])
                                         .getDownloadURL();
-                                    print(url);
                                     if (!await launchUrl(Uri.parse(url))) {
                                       print('Could not launch $url');
                                     }
@@ -232,6 +218,91 @@ class ResultsDataTable extends StatelessWidget {
             ),
           )
           .toList(),
+    );
+  }
+}
+
+class ResultTableTotal extends StatelessWidget {
+  final List<Map<String, dynamic>> dataList;
+  ResultTableTotal({
+    super.key,
+    required this.dataList,
+  });
+
+  final TextStyle _style = TextStyle(fontWeight: FontWeight.bold);
+
+  @override
+  Widget build(BuildContext context) {
+    var totalAggredited = dataList.fold(
+        0,
+        (previousValue, element) =>
+            previousValue + element['accredited_votes'] as int);
+    var totalRejected = dataList.fold(
+        0,
+        (previousValue, element) =>
+            previousValue + element['rejected_votes'] as int);
+    var totalValid = totalAggredited - totalRejected;
+    var totalApc = dataList.fold(
+        0, (previousValue, element) => previousValue + element['apc'] as int);
+    var totalNnpp = dataList.fold(
+        0, (previousValue, element) => previousValue + element['nnpp'] as int);
+    var totalPdp = dataList.fold(
+        0, (previousValue, element) => previousValue + element['pdp'] as int);
+    var totalOthers = dataList.fold(
+        0,
+        (previousValue, element) =>
+            previousValue + element['other_parties'] as int);
+
+    return Container(
+      padding: EdgeInsets.all(18.0),
+      width: double.maxFinite,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            blurRadius: 12.0,
+            offset: Offset(4, 4),
+            color: Colors.grey.withOpacity(0.6),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            "Total".toUpperCase(),
+            style: _style,
+          ),
+          Text(
+            "Accredited: ${NumberFormat('###,###,###,###').format(totalAggredited)}",
+            style: _style,
+          ),
+          Text(
+            "Rejected: ${NumberFormat('###,###,###,###').format(totalRejected)}",
+            style: _style,
+          ),
+          Text(
+            "Valid: ${NumberFormat('###,###,###,###').format(totalValid)}",
+            style: _style,
+          ),
+          Text(
+            "APC: ${NumberFormat('###,###,###,###').format(totalApc)}",
+            style: _style,
+          ),
+          Text(
+            "NNPP: ${NumberFormat('###,###,###,###').format(totalNnpp)}",
+            style: _style,
+          ),
+          Text(
+            "PDP: ${NumberFormat('###,###,###,###').format(totalPdp)}",
+            style: _style,
+          ),
+          Text(
+            "OTHER PARTIES: ${NumberFormat('###,###,###,###').format(totalOthers)}",
+            style: _style,
+          ),
+        ],
+      ),
     );
   }
 }

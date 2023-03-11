@@ -106,7 +106,8 @@ class _WardsPageState extends State<WardsPage> {
                       if (filter_lge.isNotEmpty) {
                         data = data
                             .where((element) =>
-                                element.data()['officer_email'] == filter_lge)
+                                element.data()['local_government_id'] ==
+                                filter_lge)
                             .toList();
                       }
                       return DataTable(
